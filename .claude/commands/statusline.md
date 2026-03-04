@@ -26,8 +26,8 @@ input=$(cat)
 # ---------------------------------------------------------------------------
 build_bar() {
   _pct="$1"
-  _filled=$(( _pct / 5 ))
-  _empty=$(( 20 - _filled ))
+  _filled=$(( _pct * 13 / 100 ))
+  _empty=$(( 13 - _filled ))
   bar=""
   _i=0
   while [ $_i -lt $_filled ]; do
@@ -79,7 +79,7 @@ if [ -n "$used" ]; then
   ctx_bar="$bar"
   pick_color "$used_int"
   ctx_color="$bar_color"
-  _left_len=$(( _model_len + ${#used_int} + 31 ))
+  _left_len=$(( _model_len + ${#used_int} + 24 ))
   _spaces=$(( _cols - _left_len - _cwd_len ))
   if [ "$_spaces" -lt 1 ]; then _spaces=1; fi
   _sp=""; _i=0
@@ -87,12 +87,12 @@ if [ -n "$used" ]; then
   printf "\033[94m%s\033[0m\033[2m  [${ctx_color}%s\033[0m\033[2m] %d%% used%s%s\033[0m" \
     "$model" "$ctx_bar" "$used_int" "$_sp" "$cwd"
 else
-  _left_len=$(( _model_len + 27 ))
+  _left_len=$(( _model_len + 20 ))
   _spaces=$(( _cols - _left_len - _cwd_len ))
   if [ "$_spaces" -lt 1 ]; then _spaces=1; fi
   _sp=""; _i=0
   while [ $_i -lt $_spaces ]; do _sp="${_sp} "; _i=$(( _i + 1 )); done
-  printf "\033[94m%s\033[0m\033[2m  [░░░░░░░░░░░░░░░░░░░░] -%%%s%s\033[0m" "$model" "$_sp" "$cwd"
+  printf "\033[94m%s\033[0m\033[2m  [░░░░░░░░░░░░░] -%%%s%s\033[0m" "$model" "$_sp" "$cwd"
 fi
 
 # Calculate padding so "5hr limit" label aligns its "[" with the ctx window bar
@@ -143,7 +143,7 @@ if [ -n "$USAGE_PCT" ]; then
   printf "\033[2m5hr limit${_pad}[${bar_color}%s\033[0m\033[2m] %d%%%s\033[0m" \
     "$usage_bar" "$USAGE_PCT" "$reset_label"
 else
-  printf "\033[2m5hr limit${_pad}[░░░░░░░░░░░░░░░░░░░░] fetching…\033[0m"
+  printf "\033[2m5hr limit${_pad}[░░░░░░░░░░░░░] fetching…\033[0m"
 fi
 ```
 
