@@ -1,0 +1,58 @@
+# Swift / Xcode
+.build/
+DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.swp
+*.lock
+xcuserdata/
+*.xcscmblueprint
+
+# Xcode build artifacts
+build/
+*.o
+*.d
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# SPM / Swift Package Manager
+.swiftpm/
+Packages/
+Package.resolved
+
+# CocoaPods (not used in v1, but guard anyway)
+Pods/
+*.xcworkspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# Env / secrets
+.env
+.env.*
+*.pem
+*.p12
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+*.log
