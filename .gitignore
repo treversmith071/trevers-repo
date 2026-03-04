@@ -54,5 +54,9 @@ Thumbs.db
 *.sln
 *.sw?
 
+# Node
+node_modules/
+npm-debug.log*
+
 # Logs
 *.log
