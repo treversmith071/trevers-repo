@@ -77,20 +77,20 @@ if [ -n "$used" ]; then
   used_int=$(printf "%.0f" "$used")
   build_bar "$used_int"
   ctx_bar="$bar"
-  _left_len=$(( _model_len + ${#used_int} + 24 ))
+  _left_len=$(( _model_len + ${#used_int} + 22 ))
   _spaces=$(( _cols - _left_len - _cwd_len ))
   if [ "$_spaces" -lt 1 ]; then _spaces=1; fi
   _sp=""; _i=0
   while [ $_i -lt $_spaces ]; do _sp="${_sp} "; _i=$(( _i + 1 )); done
-  printf "\033[94m%s\033[0m\033[2m  [\033[94m%s\033[0m\033[2m] \033[38;5;121m%d%% used\033[0m\033[2m%s%s\033[0m" \
+  printf "\033[94m%s\033[0m\033[2m  \033[94m%s\033[0m\033[2m \033[38;5;121m%d%% used\033[0m\033[2m%s%s\033[0m" \
     "$model" "$ctx_bar" "$used_int" "$_sp" "$cwd"
 else
-  _left_len=$(( _model_len + 20 ))
+  _left_len=$(( _model_len + 18 ))
   _spaces=$(( _cols - _left_len - _cwd_len ))
   if [ "$_spaces" -lt 1 ]; then _spaces=1; fi
   _sp=""; _i=0
   while [ $_i -lt $_spaces ]; do _sp="${_sp} "; _i=$(( _i + 1 )); done
-  printf "\033[94m%s\033[0m\033[2m  [░░░░░░░░░░░░░] -%%%s%s\033[0m" "$model" "$_sp" "$cwd"
+  printf "\033[94m%s\033[0m\033[2m  ░░░░░░░░░░░░░ -%%%s%s\033[0m" "$model" "$_sp" "$cwd"
 fi
 
 # Calculate padding so "5hr limit" label aligns its "[" with the ctx window bar
@@ -136,10 +136,10 @@ if [ -n "$USAGE_PCT" ]; then
   if [ -n "$RESET_TIME" ]; then
     reset_label="  resets $RESET_TIME"
   fi
-  printf "\033[95m5hr limit\033[0m\033[2m${_pad}[\033[95m%s\033[0m\033[2m] \033[38;5;121m%d%%%s\033[0m" \
+  printf "\033[95m5hr limit\033[0m\033[2m${_pad}\033[95m%s\033[0m\033[2m \033[38;5;121m%d%%%s\033[0m" \
     "$usage_bar" "$USAGE_PCT" "$reset_label"
 else
-  printf "\033[95m5hr limit\033[0m\033[2m${_pad}[░░░░░░░░░░░░░] fetching…\033[0m"
+  printf "\033[95m5hr limit\033[0m\033[2m${_pad}░░░░░░░░░░░░░ fetching…\033[0m"
 fi
 ```
 
