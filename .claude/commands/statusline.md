@@ -140,10 +140,10 @@ if [ -n "$USAGE_PCT" ]; then
   if [ -n "$RESET_TIME" ]; then
     reset_label="  resets $RESET_TIME"
   fi
-  printf "\033[2m5hr limit${_pad}[${bar_color}%s\033[0m\033[2m] %d%%%s\033[0m" \
+  printf "\033[95m5hr limit\033[0m\033[2m${_pad}[${bar_color}%s\033[0m\033[2m] %d%%%s\033[0m" \
     "$usage_bar" "$USAGE_PCT" "$reset_label"
 else
-  printf "\033[2m5hr limit${_pad}[░░░░░░░░░░░░░] fetching…\033[0m"
+  printf "\033[95m5hr limit\033[0m\033[2m${_pad}[░░░░░░░░░░░░░] fetching…\033[0m"
 fi
 ```
 
