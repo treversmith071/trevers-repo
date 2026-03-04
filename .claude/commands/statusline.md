@@ -77,14 +77,12 @@ if [ -n "$used" ]; then
   used_int=$(printf "%.0f" "$used")
   build_bar "$used_int"
   ctx_bar="$bar"
-  pick_color "$used_int"
-  ctx_color="$bar_color"
   _left_len=$(( _model_len + ${#used_int} + 24 ))
   _spaces=$(( _cols - _left_len - _cwd_len ))
   if [ "$_spaces" -lt 1 ]; then _spaces=1; fi
   _sp=""; _i=0
   while [ $_i -lt $_spaces ]; do _sp="${_sp} "; _i=$(( _i + 1 )); done
-  printf "\033[94m%s\033[0m\033[2m  [${ctx_color}%s\033[0m\033[2m] %d%% used%s%s\033[0m" \
+  printf "\033[94m%s\033[0m\033[2m  [\033[94m%s\033[0m\033[2m] %d%% used%s%s\033[0m" \
     "$model" "$ctx_bar" "$used_int" "$_sp" "$cwd"
 else
   _left_len=$(( _model_len + 20 ))
