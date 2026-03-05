@@ -1,10 +1,13 @@
 # Statusline Setup
 
-Installs the full two-line statusline into `~/.claude/` and wires it into `~/.claude/settings.json`.
+Installs the statusline into `~/.claude/` and wires it into `~/.claude/settings.json`.
 
-**What it shows:**
-- Line 1: model name · context-window progress bar (color-coded) · % used · cwd
-- Line 2: 5-hour Claude Pro usage bar · reset time (EST) — requires a session key
+**What it shows (single line):**
+- Model name · context-window progress bar · % used · `|` · working directory (neon cyan) · `|` · usage bar · % used · reset time (EST)
+- Context section: neon cyan (`rgb(0,180,255)`)
+- Usage section: neon pink (`rgb(255,120,240)`)
+- Both bars: 9 characters wide
+- Usage reset time requires a session key
 
 ---
 
@@ -21,13 +24,13 @@ Write the following content verbatim to the file `~/.claude/statusline-command.s
 input=$(cat)
 
 # ---------------------------------------------------------------------------
-# Helper: build a 20-char progress bar string into variable $bar
+# Helper: build a 9-char progress bar string into variable $bar
 # Usage: build_bar <integer_percentage>
 # ---------------------------------------------------------------------------
 build_bar() {
   _pct="$1"
-  _filled=$(( _pct * 13 / 100 ))
-  _empty=$(( 13 - _filled ))
+  _filled=$(( (_pct * 9 + 50) / 100 ))
+  _empty=$(( 9 - _filled ))
   bar=""
   _i=0
   while [ $_i -lt $_filled ]; do
@@ -57,53 +60,39 @@ pick_color() {
 }
 
 # ---------------------------------------------------------------------------
-# Line 1: context window bar
+# Context window data
 # ---------------------------------------------------------------------------
 if ! command -v jq > /dev/null 2>&1; then
   model="Unknown Model"
-  cwd="unknown"
   used=""
 else
   model=$(echo "$input" | jq -r '.model.display_name // "Unknown Model"')
-  cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // "unknown"')
   used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 fi
 
-_cols="${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}"
-_model_len=$(printf '%s' "$model" | wc -c | tr -d ' ')
-_cwd_len=$(printf '%s' "$cwd" | wc -c | tr -d ' ')
+workdir=$(basename "${PWD:-$(pwd)}")
+git_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+git_changes=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+
+if [ -n "$git_branch" ]; then
+  if [ -n "$git_changes" ] && [ "$git_changes" -gt 0 ] 2>/dev/null; then
+    branch_label="⎇ ${git_branch} *${git_changes}"
+  else
+    branch_label="⎇ ${git_branch}"
+  fi
+  dir_section=$(printf "\033[22m\033[38;2;0;255;255m%s\033[0m \033[38;2;255;120;240m%s\033[0m" "$workdir" "$branch_label")
+else
+  dir_section=$(printf "\033[22m\033[38;2;0;255;255m%s\033[0m" "$workdir")
+fi
 
 if [ -n "$used" ]; then
   used_int=$(printf "%.0f" "$used")
   build_bar "$used_int"
   ctx_bar="$bar"
-  _left_len=$(( _model_len + ${#used_int} + 22 ))
-  _spaces=$(( _cols - _left_len - _cwd_len ))
-  if [ "$_spaces" -lt 1 ]; then _spaces=1; fi
-  _sp=""; _i=0
-  while [ $_i -lt $_spaces ]; do _sp="${_sp} "; _i=$(( _i + 1 )); done
-  printf "\033[94m%s\033[0m\033[2m  \033[94m%s\033[0m\033[2m \033[38;2;108;231;206m%d%% used\033[0m\033[2m%s%s\033[0m" \
-    "$model" "$ctx_bar" "$used_int" "$_sp" "$cwd"
-else
-  _left_len=$(( _model_len + 18 ))
-  _spaces=$(( _cols - _left_len - _cwd_len ))
-  if [ "$_spaces" -lt 1 ]; then _spaces=1; fi
-  _sp=""; _i=0
-  while [ $_i -lt $_spaces ]; do _sp="${_sp} "; _i=$(( _i + 1 )); done
-  printf "\033[94m%s\033[0m\033[2m  ░░░░░░░░░░░░░ -%%%s%s\033[0m" "$model" "$_sp" "$cwd"
 fi
 
-# Calculate padding so "5hr limit" label aligns its "[" with the ctx window bar
-_pad_need=$(( _model_len - 7 ))
-if [ "$_pad_need" -lt 2 ]; then _pad_need=2; fi
-_pad=""
-_i=0
-while [ $_i -lt $_pad_need ]; do _pad="${_pad} "; _i=$(( _i + 1 )); done
-
 # ---------------------------------------------------------------------------
-# Line 2: 5-hour account usage bar
-# Refresh cache if older than 30 seconds, otherwise use cached value.
-# Fetch runs in background so it never blocks the statusline.
+# 5-hour account usage bar
 # ---------------------------------------------------------------------------
 CACHE_FILE="/tmp/claude_usage_cache"
 FETCH_SCRIPT="$HOME/.claude/fetch-usage.sh"
@@ -128,7 +117,6 @@ if [ -f "$CACHE_FILE" ]; then
   RESET_TIME=$(grep "^RESET_TIME=" "$CACHE_FILE" | cut -d= -f2-)
 fi
 
-printf "\n"
 if [ -n "$USAGE_PCT" ]; then
   build_bar "$USAGE_PCT"
   usage_bar="$bar"
@@ -136,10 +124,28 @@ if [ -n "$USAGE_PCT" ]; then
   if [ -n "$RESET_TIME" ]; then
     reset_label="  resets $RESET_TIME"
   fi
-  printf "\033[95m5hr limit\033[0m\033[2m${_pad}\033[95m%s\033[0m\033[2m \033[38;2;108;231;206m%d%%%s\033[0m" \
-    "$usage_bar" "$USAGE_PCT" "$reset_label"
+fi
+
+# ---------------------------------------------------------------------------
+# Print single combined line:
+#   model  [ctx_bar] X% | workdir  branch *N | [usage_bar] XX%  resets TIME
+# ---------------------------------------------------------------------------
+if [ -n "$used" ]; then
+  if [ -n "$USAGE_PCT" ]; then
+    printf "\033[38;2;0;180;255m%s\033[0m\033[2m  \033[38;2;0;180;255m%s\033[0m\033[2m \033[38;2;0;180;255m%d%%\033[0m\033[2m | %s\033[2m | \033[38;2;255;120;240m%s\033[0m\033[2m \033[38;2;255;120;240m%d%%\033[0m\033[38;2;255;120;240m%s\033[0m" \
+      "$model" "$ctx_bar" "$used_int" "$dir_section" "$usage_bar" "$USAGE_PCT" "$reset_label"
+  else
+    printf "\033[38;2;0;180;255m%s\033[0m\033[2m  \033[38;2;0;180;255m%s\033[0m\033[2m \033[38;2;0;180;255m%d%%\033[0m\033[2m | %s\033[2m | \033[2m░░░░░░░░░ fetching…\033[0m" \
+      "$model" "$ctx_bar" "$used_int" "$dir_section"
+  fi
 else
-  printf "\033[95m5hr limit\033[0m\033[2m${_pad}░░░░░░░░░░░░░ fetching…\033[0m"
+  if [ -n "$USAGE_PCT" ]; then
+    printf "\033[38;2;0;180;255m%s\033[0m\033[2m  ░░░░░░░░░ -%%\033[0m\033[2m | %s\033[2m | \033[38;2;255;120;240m%s\033[0m\033[2m \033[38;2;255;120;240m%d%%\033[0m\033[38;2;255;120;240m%s\033[0m" \
+      "$model" "$dir_section" "$usage_bar" "$USAGE_PCT" "$reset_label"
+  else
+    printf "\033[38;2;0;180;255m%s\033[0m\033[2m  ░░░░░░░░░ -%%\033[0m\033[2m | %s\033[2m | \033[2m░░░░░░░░░ fetching…\033[0m" \
+      "$model" "$dir_section"
+  fi
 fi
 ```
 
@@ -267,11 +273,11 @@ Use the `statusline-setup` agent to add the following `statusLine` block to `~/.
 
 The agent will resolve `~` to the real home path when writing the file.
 
-### Step 5 — Session key setup (optional, for 5-hour usage bar)
+### Step 5 — Session key setup (optional, for usage bar)
 
 Ask the user:
 
-> "Would you like to enable the 5-hour usage bar? This requires your Claude.ai session key. It never leaves your machine — it's only used by `fetch-usage.sh` to call the claude.ai API locally."
+> "Would you like to enable the usage bar? This requires your Claude.ai session key. It never leaves your machine — it's only used by `fetch-usage.sh` to call the claude.ai API locally."
 
 If **yes**, guide them through these steps:
 1. Open [https://claude.ai](https://claude.ai) in their browser and make sure they are logged in
@@ -280,7 +286,7 @@ If **yes**, guide them through these steps:
 4. Find the cookie named `sessionKey` and copy its value
 5. Run: `echo 'PASTE_SESSION_KEY_HERE' > ~/.claude/claude_session && chmod 600 ~/.claude/claude_session`
 
-If **no**, inform them: "The statusline will still show the context window bar on line 1. Line 2 will show `fetching…` but won't update. You can add the session key later by creating `~/.claude/claude_session`."
+If **no**, inform them: "The statusline will still show the context window bar. The usage section will show `fetching…` but won't update. You can add the session key later by creating `~/.claude/claude_session`."
 
 ### Step 6 — Verify
 
