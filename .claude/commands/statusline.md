@@ -5,7 +5,7 @@ Installs the statusline into `~/.claude/` and wires it into `~/.claude/settings.
 **What it shows (single line):**
 - Model name · context-window progress bar · % used · `|` · working directory (neon cyan) · `|` · usage bar · % used · reset time (EST)
 - Context section: neon cyan (`rgb(0,180,255)`)
-- Usage section: neon pink (`rgb(255,120,240)`)
+- Usage section: light purple (`rgb(190,140,255)`)
 - Both bars: 9 characters wide
 - Usage reset time requires a session key
 
@@ -132,7 +132,7 @@ fi
 # ---------------------------------------------------------------------------
 if [ -n "$used" ]; then
   if [ -n "$USAGE_PCT" ]; then
-    printf "\033[38;2;0;180;255m%s\033[0m\033[2m  \033[38;2;0;180;255m%s\033[0m\033[2m \033[38;2;0;180;255m%d%%\033[0m\033[2m | %s\033[2m | \033[38;2;255;120;240m%s\033[0m\033[2m \033[38;2;255;120;240m%d%%\033[0m\033[38;2;255;120;240m%s\033[0m" \
+    printf "\033[38;2;0;180;255m%s\033[0m\033[2m  \033[38;2;0;180;255m%s\033[0m\033[2m \033[38;2;0;180;255m%d%%\033[0m\033[2m | %s\033[2m | \033[38;2;190;140;255m%s\033[0m\033[2m \033[38;2;190;140;255m%d%%\033[0m\033[38;2;190;140;255m%s\033[0m" \
       "$model" "$ctx_bar" "$used_int" "$dir_section" "$usage_bar" "$USAGE_PCT" "$reset_label"
   else
     printf "\033[38;2;0;180;255m%s\033[0m\033[2m  \033[38;2;0;180;255m%s\033[0m\033[2m \033[38;2;0;180;255m%d%%\033[0m\033[2m | %s\033[2m | \033[2m░░░░░░░░░ fetching…\033[0m" \
@@ -140,7 +140,7 @@ if [ -n "$used" ]; then
   fi
 else
   if [ -n "$USAGE_PCT" ]; then
-    printf "\033[38;2;0;180;255m%s\033[0m\033[2m  ░░░░░░░░░ -%%\033[0m\033[2m | %s\033[2m | \033[38;2;255;120;240m%s\033[0m\033[2m \033[38;2;255;120;240m%d%%\033[0m\033[38;2;255;120;240m%s\033[0m" \
+    printf "\033[38;2;0;180;255m%s\033[0m\033[2m  ░░░░░░░░░ -%%\033[0m\033[2m | %s\033[2m | \033[38;2;190;140;255m%s\033[0m\033[2m \033[38;2;190;140;255m%d%%\033[0m\033[38;2;190;140;255m%s\033[0m" \
       "$model" "$dir_section" "$usage_bar" "$USAGE_PCT" "$reset_label"
   else
     printf "\033[38;2;0;180;255m%s\033[0m\033[2m  ░░░░░░░░░ -%%\033[0m\033[2m | %s\033[2m | \033[2m░░░░░░░░░ fetching…\033[0m" \
